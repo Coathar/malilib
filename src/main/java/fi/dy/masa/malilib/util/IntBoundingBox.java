@@ -1,9 +1,12 @@
 package fi.dy.masa.malilib.util;
 
+import javax.annotation.Nullable;
 import net.minecraft.nbt.NbtIntArray;
 import net.minecraft.util.math.BlockBox;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.World;
 
 public class IntBoundingBox
 {
@@ -32,6 +35,16 @@ public class IntBoundingBox
                pos.getZ() <= this.maxZ &&
                pos.getY() >= this.minY &&
                pos.getY() <= this.maxY;
+    }
+
+    public boolean containsPos(long pos)
+    {
+        int x = BlockPos.unpackLongX(pos);
+        int y = BlockPos.unpackLongY(pos);
+        int z = BlockPos.unpackLongZ(pos);
+
+        return x >= this.minX && y <= this.maxX && z >= this.minZ &&
+               x <= this.maxZ && y >= this.minY && z <= this.maxY;
     }
 
     public boolean intersects(IntBoundingBox box)
@@ -94,6 +107,16 @@ public class IntBoundingBox
                 Math.max(z1, z2));
     }
 
+    public static IntBoundingBox createForWorldBounds(@Nullable World world)
+    {
+        int worldMinH = -30000000;
+        int worldMaxH =  30000000;
+        int worldMinY = world != null ? world.getBottomY() : -64;
+        int worldMaxY = world != null ? world.getTopY() - 1 : 319;
+
+        return new IntBoundingBox(worldMinH, worldMinY, worldMinH, worldMaxH, worldMaxY, worldMaxH);
+    }
+
     public static IntBoundingBox fromArray(int[] coords)
     {
         if (coords.length == 6)
@@ -104,6 +127,22 @@ public class IntBoundingBox
         {
             return new IntBoundingBox(0, 0, 0, 0, 0, 0);
         }
+    }
+
+    public IntBoundingBox expand(int amount)
+    {
+        return this.expand(amount, amount, amount);
+    }
+
+    public IntBoundingBox expand(int x, int y, int z)
+    {
+        return new IntBoundingBox(this.minX - x, this.minY - y, this.minZ - z,
+                                  this.maxX + x, this.maxY + y, this.maxZ + z);
+    }
+
+    public IntBoundingBox shrink(int x, int y, int z)
+    {
+        return this.expand(-x, -y, -z);
     }
 
     @Override

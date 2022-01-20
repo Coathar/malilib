@@ -1,12 +1,13 @@
 package fi.dy.masa.malilib.gui.widgets;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import com.google.common.collect.ImmutableList;
 import fi.dy.masa.malilib.config.ConfigType;
 import fi.dy.masa.malilib.config.IConfigBase;
+import fi.dy.masa.malilib.config.IConfigResettable;
 import fi.dy.masa.malilib.gui.GuiConfigsBase;
 import fi.dy.masa.malilib.gui.GuiConfigsBase.ConfigOptionWrapper;
 import fi.dy.masa.malilib.gui.LeftRight;
@@ -60,7 +61,23 @@ public class WidgetListConfigOptions extends WidgetListConfigOptionsBase<ConfigO
 
         if (config != null)
         {
-            return ImmutableList.of(config.getName().toLowerCase());
+            ArrayList<String> list = new ArrayList<>();
+            String name = config.getName();
+            String translated = config.getConfigGuiDisplayName();
+
+            list.add(name.toLowerCase());
+
+            if (name.equals(translated) == false)
+            {
+                list.add(translated.toLowerCase());
+            }
+
+            if (config instanceof IConfigResettable && ((IConfigResettable) config).isModified())
+            {
+                list.add("modified");
+            }
+
+            return list;
         }
 
         return Collections.emptyList();
@@ -112,7 +129,7 @@ public class WidgetListConfigOptions extends WidgetListConfigOptionsBase<ConfigO
         {
             if (wrapper.getType() == ConfigOptionWrapper.Type.CONFIG)
             {
-                width = Math.max(width, this.getStringWidth(wrapper.getConfig().getName()));
+                width = Math.max(width, this.getStringWidth(wrapper.getConfig().getConfigGuiDisplayName()));
             }
         }
 
